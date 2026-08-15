@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Etik · Diseñador de etiquetas</title>
+<script src="qr-engine.js"></script>
+
+<link rel="stylesheet" href="styles.css">
+
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">E</div>
+      <div>
+        <h1>Etik</h1>
+        <p>Diseña e imprime etiquetas fácilmente.</p>
+      </div>
+    </div>
+
+    <div class="topbar-center">
+      <button class="btn" id="newBtn">＋ Nueva</button>
+      <button class="btn" id="saveBtn">Guardar</button>
+      <button class="btn" id="exportBtn">Exportar</button>
+      <button class="btn" id="importBtn">Importar</button>
+      <input id="importDesignFile" type="file" accept="application/json,.json" hidden>
+    </div>
+
+    <div class="topbar-actions">
+      <button class="btn primary" id="printBtn">🖨 Imprimir</button>
+      <button class="btn mobile-more-btn" id="mobileMoreBtn" type="button" aria-label="Más opciones" aria-expanded="false">⋮</button>
+    </div>
+    <div class="mobile-more-menu" id="mobileMoreMenu" aria-label="Opciones del diseño">
+      <button class="btn" type="button" data-mobile-action="new">＋ Nueva etiqueta</button>
+      <button class="btn" type="button" data-mobile-action="save">💾 Guardar</button>
+      <button class="btn" type="button" data-mobile-action="export">⇩ Exportar diseño</button>
+      <button class="btn" type="button" data-mobile-action="import">⇧ Importar diseño</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="panel left" id="leftPanel">
+      <div class="panel-inner">
+        <button class="mobile-sheet-close" type="button" data-close-mobile-sheet aria-label="Cerrar panel"><span>Cerrar</span></button>
+        <section class="section">
+          <div class="section-head"><h2>Agregar</h2><span class="sub">Elementos</span></div>
+          <div class="section-body">
+            <div class="tool-grid">
+              <button class="tool" id="addTextBtn"><span class="ico">T</span><strong>Texto</strong><span>Títulos y datos</span></button>
+              <button class="tool" id="addImageBtn"><span class="ico">▧</span><strong>Imagen</strong><span>PNG, JPG, WebP</span></button>
+              <button class="tool" id="addBarcodeBtn"><span class="ico">▥</span><strong>Código barras</strong><span>Code 128</span></button>
+              <button class="tool" id="addQrBtn"><span class="ico">▦</span><strong>Código QR</strong><span>Texto, URL o dato</span></button>
+              <button class="tool" id="addLineBtn"><span class="ico">━</span><strong>Línea</strong><span>Separadores</span></button>
+              <button class="tool" id="addBoxBtn"><span class="ico">□</span><strong>Recuadro</strong><span>Marcos y áreas</span></button>
+            </div>
+            <input id="imageFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml" hidden>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-head"><h2>Etiqueta</h2><span class="sub">Tamaño real</span></div>
+          <div class="section-body">
+            <div class="row2">
+              <div class="field"><label for="labelWidth">Ancho (mm)</label><input id="labelWidth" type="number" min="15" max="300" step="0.1" value="53.6"></div>
+              <div class="field"><label for="labelHeight">Alto (mm)</label><input id="labelHeight" type="number" min="10" max="300" step="0.1" value="31"></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label for="labelBg">Fondo</label><input id="labelBg" type="color" value="#ffffff"></div>
+              <div class="field"><label for="safeMargin">Margen seguro (mm)</label><input id="safeMargin" type="number" min="0" max="20" step="0.5" value="1.5"></div>
+            </div>
+            <label class="check"><input type="checkbox" id="showSafe"> Mostrar margen seguro</label>
+            <label class="check" style="margin-top:8px"><input type="checkbox" id="showGrid"> Mostrar cuadrícula</label>
+            <label class="check" style="margin-top:8px"><input type="checkbox" id="snapGrid" checked> Ajustar elementos a cuadrícula</label>
+            <div class="field" style="margin-top:10px"><label for="snapSize">Paso de cuadrícula (mm)</label><input id="snapSize" type="number" min="0.1" max="10" step="0.1" value="1"></div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-head"><h2>Capas</h2><span class="sub" id="layerCount">0 elementos</span></div>
+          <div class="section-body">
+            <div class="layer-list" id="layerList"></div>
+            <div class="mini-actions" style="margin-top:8px">
+              <button class="btn" id="bringFrontBtn">↑ Frente</button>
+              <button class="btn" id="sendBackBtn">↓ Fondo</button>
+              <button class="btn" id="duplicateBtn">⧉ Duplicar</button>
+              <button class="btn danger" id="deleteBtn">Eliminar</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-head"><h2>Plantilla</h2><span class="sub">Inicio rápido</span></div>
+          <div class="section-body">
+            <button class="btn soft" id="sampleBtn" style="width:100%">Cargar ejemplo de inventario</button>
+            <p class="hint">Reemplaza el diseño actual con una plantilla totalmente editable.</p>
+          </div>
+        </section>
+      </div>
+    </aside>
+
+    <main class="workspace">
+      <div class="canvas-toolbar">
+        <div class="group">
+          <button class="btn" id="fitBtn">Ajustar</button>
+          <button class="btn icon" id="zoomOutBtn">−</button>
+          <span class="zoom-label" id="zoomLabel">150%</span>
+          <button class="btn icon" id="zoomInBtn">＋</button>
+        </div>
+        <div class="group">
+          <button class="btn" id="centerHQuick">↔ Centrar H</button>
+          <button class="btn" id="centerVQuick">↕ Centrar V</button>
+          <button class="btn soft" id="centerBothQuick">⌾ Centrar</button>
+        </div>
+      </div>
+
+      <div class="stage-scroll" id="stageScroll">
+        <div class="stage-area" id="stageArea">
+          <div id="labelCanvas" aria-label="Lienzo de etiqueta">
+            <div class="safe-area" id="safeArea" hidden></div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <aside class="panel right" id="rightPanel">
+      <div class="panel-inner">
+        <button class="mobile-sheet-close" type="button" data-close-mobile-sheet aria-label="Cerrar panel"><span>Cerrar</span></button>
+        <section class="section" id="emptyInspector">
+          <div class="section-head"><h2>Propiedades</h2><span class="pill">Inspector</span></div>
+          <div class="section-body">
+            <div class="empty"><strong>Ningún elemento seleccionado</strong><br>Selecciona algo en la etiqueta o en la lista de capas para editarlo.</div>
+          </div>
+        </section>
+
+        <section class="section" id="inspector" hidden>
+          <div class="section-head"><h2>Elemento seleccionado</h2><span class="pill" id="selectedType">Texto</span></div>
+          <div class="section-body">
+            <div class="selection-title">
+              <div class="badge" id="selectedIcon">T</div>
+              <div><strong id="selectedName">Texto</strong><small id="selectedMeta">Editable</small></div>
+            </div>
+
+            <div id="contentControls">
+              <div class="field"><label for="elementContent" id="contentLabel">Contenido</label><textarea id="elementContent"></textarea></div>
+            </div>
+
+            <div id="textControls">
+              <div class="field">
+                <label for="fontFamily">Fuente</label>
+                <select id="fontFamily">
+                  <option value="'Everyday Sans', Arial, sans-serif">Everyday Sans (Walmart, si está instalada)</option>
+                  <option value="Arial, sans-serif">Arial</option>
+                  <option value="Helvetica, Arial, sans-serif">Helvetica</option>
+                  <option value="'Arial Narrow', Arial, sans-serif">Arial Narrow</option>
+                  <option value="Verdana, sans-serif">Verdana</option>
+                  <option value="Tahoma, sans-serif">Tahoma</option>
+                  <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                  <option value="Impact, sans-serif">Impact</option>
+                  <option value="'Courier New', monospace">Courier New</option>
+                  <option value="Georgia, serif">Georgia</option>
+                  <option value="'Times New Roman', serif">Times New Roman</option>
+                </select>
+              </div>
+
+              <div class="font-import">
+                <button class="btn soft" id="fontImportBtn" style="width:100%">＋ Importar fuente</button>
+                <input id="fontFile" type="file" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2">
+                <div class="file-name" id="fontFileName">Acepta TTF, OTF, WOFF y WOFF2.</div>
+              </div>
+
+              <div class="row3" style="margin-top:10px">
+                <div class="field"><label for="fontSize">Tamaño (pt)</label><input id="fontSize" type="number" min="4" max="200" step="0.5"></div>
+                <div class="field"><label for="letterSpacing">Espaciado (px)</label><input id="letterSpacing" type="number" min="-5" max="20" step="0.1"></div>
+                <div class="field"><label for="lineHeight">Interlineado</label><input id="lineHeight" type="number" min="0.6" max="3" step="0.05"></div>
+              </div>
+
+              <div class="mini-actions">
+                <button class="btn" id="boldBtn"><b>B</b></button>
+                <button class="btn" id="italicBtn"><i>I</i></button>
+                <button class="btn" id="underlineBtn"><u>U</u></button>
+              </div>
+              <div class="mini-actions" style="margin-top:6px">
+                <button class="btn textAlignBtn" data-align="left">≡ Izq.</button>
+                <button class="btn textAlignBtn" data-align="center">≡ Centro</button>
+                <button class="btn textAlignBtn" data-align="right">≡ Der.</button>
+              </div>
+            </div>
+
+            <div id="barcodeControls" hidden>
+              <div class="row2">
+                <div class="field"><label for="barcodeHuman">Número visible</label><select id="barcodeHuman"><option value="yes">Mostrar</option><option value="no">Ocultar</option></select></div>
+                <div class="field"><label for="barcodeScale">Grosor</label><select id="barcodeScale"><option value="normal">Normal</option><option value="compact">Compacto</option></select></div>
+              </div>
+            </div>
+
+            <div id="qrControls" hidden>
+              <div class="row2">
+                <div class="field"><label for="qrEcc">Corrección QR</label><select id="qrEcc"><option value="L">Baja</option><option value="M" selected>Media</option><option value="Q">Alta</option><option value="H">Máxima</option></select></div>
+                <div class="field"><label for="qrMargin">Margen QR</label><input id="qrMargin" type="number" min="0" max="8" step="1" value="0"></div>
+              </div>
+            </div>
+
+            <div id="imageControls" hidden>
+              <div class="field"><label for="imageFit">Ajuste de imagen</label><select id="imageFit"><option value="contain">Contener</option><option value="cover">Cubrir</option><option value="fill">Estirar</option></select></div>
+              <button class="btn" id="replaceImageBtn" style="width:100%">Reemplazar imagen</button>
+            </div>
+
+            <div class="divider"></div>
+            <div class="row2">
+              <div class="field"><label for="posX">X (mm)</label><input id="posX" type="number" step="0.1"></div>
+              <div class="field"><label for="posY">Y (mm)</label><input id="posY" type="number" step="0.1"></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label for="elementWidth">Ancho (mm)</label><input id="elementWidth" type="number" min="1" step="0.1"></div>
+              <div class="field"><label for="elementHeight">Alto (mm)</label><input id="elementHeight" type="number" min="1" step="0.1"></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label for="rotation">Rotación (°)</label><input id="rotation" type="number" min="-180" max="180" step="1"></div>
+              <div class="field"><label for="opacity">Opacidad</label><input id="opacity" type="number" min="0.05" max="1" step="0.05"></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label for="elementColor">Color</label><input id="elementColor" type="color" value="#000000"></div>
+              <div class="field"><label for="borderWidth">Borde / línea (px)</label><input id="borderWidth" type="number" min="0" max="12" step="0.5"></div>
+            </div>
+            <label class="check"><input type="checkbox" id="locked"> Bloquear posición y tamaño</label>
+          </div>
+        </section>
+
+        <section class="section" id="alignSection" hidden>
+          <div class="section-head"><h2>Alinear en etiqueta</h2><span class="sub">Posición exacta</span></div>
+          <div class="section-body">
+            <div class="align-grid">
+              <button class="btn" data-canvas-align="left">← Izq.</button>
+              <button class="btn" data-canvas-align="centerH">↔ Centro</button>
+              <button class="btn" data-canvas-align="right">Der. →</button>
+              <button class="btn" data-canvas-align="top">↑ Arriba</button>
+              <button class="btn" data-canvas-align="centerV">↕ Centro</button>
+              <button class="btn" data-canvas-align="bottom">Abajo ↓</button>
+            </div>
+            <button class="btn soft" data-canvas-align="centerBoth" style="width:100%;margin-top:7px">⌾ Centrar completamente</button>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-head"><h2>Ayuda rápida</h2><span class="sub">Controles</span></div>
+          <div class="section-body">
+            <p class="hint" style="margin:0">• Arrastra para mover.<br>• Usa el punto de la esquina para cambiar tamaño.<br>• Flechas: mover 0.2 mm. Shift + flecha: 1 mm.<br>• Supr: eliminar. Ctrl/Cmd + D: duplicar.<br>• Doble clic en un texto: edición rápida.</p>
+          </div>
+        </section>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<nav class="mobile-bottom-nav" id="mobileBottomNav" aria-label="Herramientas móviles">
+  <button class="mobile-nav-btn" type="button" data-mobile-target="add"><span class="nav-ico">＋</span><span>Agregar</span></button>
+  <button class="mobile-nav-btn" type="button" data-mobile-target="label"><span class="nav-ico">▭</span><span>Etiqueta</span></button>
+  <button class="mobile-nav-btn" type="button" data-mobile-target="edit"><span class="nav-ico">✎</span><span>Editar</span></button>
+  <button class="mobile-nav-btn" type="button" data-mobile-target="layers"><span class="nav-ico">▤</span><span>Capas</span></button>
+  <button class="mobile-nav-btn print" type="button" data-mobile-target="print"><span class="nav-ico">🖨</span><span>Imprimir</span></button>
+</nav>
+
+<div class="mobile-selection-bar" id="mobileSelectionBar" aria-label="Acciones rápidas del elemento">
+  <button type="button" id="mobileEditBtn">✎ Editar</button>
+  <button type="button" id="mobileCenterBtn">⌾ Centrar</button>
+  <button type="button" id="mobileDuplicateBtn">⧉</button>
+  <button type="button" class="danger" id="mobileDeleteBtn">🗑</button>
+</div>
+
+<div class="statusbar" id="statusbar"></div>
+
+<script src="app.js"></script>
+
+</body>
+</html>
