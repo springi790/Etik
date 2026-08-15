@@ -24,6 +24,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Prepare browser assets
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import base64, gzip, re
+
+          assets = {
+              'css-data.js': ('__etikCssGzip', 'styles.css'),
+              'app-data.js': ('__etikAppGzip', 'app.js'),
+          }
+
+          for source, (var_name, target) in assets.items():
+              text = Path(source).read_text(encoding='utf-8')
+              match = re.search(r'=\s*["\'](.+?)["\'];?\s*$', text, re.S)
+              if not match:
+                  raise SystemExit(f'No se pudo leer {var_name} desde {source}')
+              decoded = gzip.decompress(base64.b64decode(match.group(1)))
+              Path(target).write_bytes(decoded)
+          PY
+
+          curl -fsSL "https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js" -o qr-engine.js
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
