@@ -45,7 +45,8 @@ jobs:
               Path(target).write_bytes(decoded)
           PY
 
-          curl -fsSL "https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js" -o qr-engine.js
+          npm install --no-save qrcode@1.5.4 browserify@17
+          npx browserify node_modules/qrcode/lib/browser.js --standalone QRCode -o qr-engine.js
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
