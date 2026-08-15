@@ -47,6 +47,7 @@ jobs:
 
           npm install --no-save qrcode@1.5.4 browserify@17
           npx browserify node_modules/qrcode/lib/browser.js --standalone QRCode -o qr-engine.js
+          rm -rf node_modules package-lock.json package.json
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
