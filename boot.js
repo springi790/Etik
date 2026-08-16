@@ -19,12 +19,13 @@
     try{
       const style=document.createElement('link');
       style.rel='stylesheet';
-      style.href='styles.css?v=12';
+      style.href='styles.css?v=13';
       document.head.appendChild(style);
 
-      await loadScript('qr-engine.js?v=12');
-      await loadScript('app.js?v=12');
-      await loadScript('enhancements.js?v=12');
+      await loadScript('qr-engine.js?v=13');
+      await loadScript('app.js?v=13');
+      await loadScript('enhancements.js?v=13');
+      await loadScript('menu.js?v=13');
 
       delete window.__etikCssGzip;
       delete window.__etikQrGzip;
