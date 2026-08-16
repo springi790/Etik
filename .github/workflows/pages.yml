@@ -60,7 +60,7 @@ jobs:
               '<script src="app-data.js"></script>',
               '<script src="boot.js"></script>',
           ])
-          new = '<script src="boot.js?v=9"></script>'
+          new = '<script src="boot.js?v=10"></script>'
           if old not in html:
               raise SystemExit('No se encontró el bloque antiguo de arranque en index.html')
           path.write_text(html.replace(old, new), encoding='utf-8')
