@@ -6,13 +6,20 @@
 
   const style = document.createElement('style');
   style.textContent = `
-    .etik-start-bar{
-      display:flex;align-items:center;gap:8px;padding:8px 12px;
-      border-bottom:1px solid var(--line,#ddd);background:var(--paper,#fff);
-      position:relative;z-index:8
+    .canvas-toolbar{position:relative}
+    .etik-more-actions-wrap{margin-left:auto;display:flex;align-items:center;flex:0 0 auto}
+    .etik-more-actions-btn{
+      width:40px;height:40px;min-width:40px;min-height:40px;padding:0!important;
+      display:grid!important;place-items:center;font-size:1.35rem;line-height:1;border-radius:10px
     }
-    .etik-start-bar .btn{flex:1;min-height:40px;font-weight:700}
-    .etik-start-bar .etik-reset-visible{border-color:#b42318;color:#b42318}
+    .etik-quick-menu{
+      position:fixed;z-index:9999;display:none;width:min(220px,calc(100vw - 16px));
+      padding:7px;background:var(--paper,#fff);border:1px solid var(--line,#ddd);
+      border-radius:12px;box-shadow:0 12px 36px rgba(0,0,0,.18)
+    }
+    .etik-quick-menu.open{display:grid;gap:6px}
+    .etik-quick-menu .btn{width:100%;min-height:42px;text-align:left;justify-content:flex-start;padding:9px 11px}
+    .etik-quick-menu .danger{color:#b42318;border-color:#d7a29d}
     .etik-rotation-tools{margin-top:10px;padding:10px;border:1px solid var(--line,#d9d9d9);border-radius:10px;background:rgba(127,127,127,.04)}
     .etik-rotation-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;font-size:.78rem;font-weight:700}
     .etik-rotation-value{font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -22,8 +29,9 @@
     .etik-template-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
     .etik-mobile-rotate{white-space:nowrap}
     @media(max-width:760px){
-      .etik-start-bar{display:grid;grid-template-columns:1fr 1fr;padding:8px 10px;position:sticky;top:0}
-      .etik-start-bar .btn{min-height:46px;padding:9px 6px;font-size:.78rem}
+      .canvas-toolbar{padding-right:8px!important}
+      .etik-more-actions-wrap{margin-left:auto}
+      .etik-more-actions-btn{width:38px;height:38px;min-width:38px;min-height:38px;border-radius:9px}
       .etik-rotation-tools{padding:12px}
       .etik-rotation-range{min-height:46px}
       .etik-rotation-actions .btn{min-height:42px;font-size:.78rem}
@@ -40,23 +48,64 @@
     if (newBtn) newBtn.click();
   }
 
-  // Acciones SIEMPRE visibles encima del lienzo.
-  const workspace = $('.workspace');
-  const stageScroll = $('#stageScroll');
-  if (workspace && stageScroll && !$('#etikStartBar')) {
-    const bar = document.createElement('div');
-    bar.id = 'etikStartBar';
-    bar.className = 'etik-start-bar';
-    bar.innerHTML = `
+  // Un solo acceso compacto en la barra del lienzo. No crea una fila nueva.
+  const canvasToolbar = $('.canvas-toolbar');
+  if (canvasToolbar && !$('#etikMoreActionsBtn')) {
+    const wrap = document.createElement('div');
+    wrap.className = 'etik-more-actions-wrap';
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.id = 'etikMoreActionsBtn';
+    btn.className = 'btn etik-more-actions-btn';
+    btn.textContent = '⋮';
+    btn.title = 'Plantilla y reinicio';
+    btn.setAttribute('aria-label','Plantilla y reinicio');
+    btn.setAttribute('aria-expanded','false');
+    wrap.appendChild(btn);
+    canvasToolbar.appendChild(wrap);
+
+    const menu = document.createElement('div');
+    menu.id = 'etikQuickMenu';
+    menu.className = 'etik-quick-menu';
+    menu.innerHTML = `
       <button class="btn soft" id="etikSampleVisible" type="button">✨ Plantilla de prueba</button>
-      <button class="btn etik-reset-visible" id="etikResetVisible" type="button">🗑 Reiniciar etiqueta</button>
+      <button class="btn danger" id="etikResetVisible" type="button">↺ Reiniciar etiqueta</button>
     `;
-    workspace.insertBefore(bar, stageScroll);
-    $('#etikSampleVisible')?.addEventListener('click', loadSample);
-    $('#etikResetVisible')?.addEventListener('click', resetLabel);
+    document.body.appendChild(menu);
+
+    const closeMenu = () => {
+      menu.classList.remove('open');
+      btn.setAttribute('aria-expanded','false');
+    };
+    const positionMenu = () => {
+      const rect = btn.getBoundingClientRect();
+      const width = Math.min(220, window.innerWidth - 16);
+      const left = Math.max(8, Math.min(window.innerWidth - width - 8, rect.right - width));
+      menu.style.left = `${left}px`;
+      menu.style.top = `${Math.min(window.innerHeight - 110, rect.bottom + 6)}px`;
+    };
+
+    btn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const opening = !menu.classList.contains('open');
+      if (opening) {
+        menu.classList.add('open');
+        positionMenu();
+        btn.setAttribute('aria-expanded','true');
+      } else {
+        closeMenu();
+      }
+    });
+    menu.addEventListener('click', event => event.stopPropagation());
+    $('#etikSampleVisible')?.addEventListener('click', () => { closeMenu(); loadSample(); });
+    $('#etikResetVisible')?.addEventListener('click', () => { closeMenu(); resetLabel(); });
+    document.addEventListener('click', closeMenu);
+    window.addEventListener('resize', closeMenu, {passive:true});
+    window.addEventListener('scroll', closeMenu, {passive:true});
   }
 
-  // También dejar las acciones claras dentro de la sección Plantilla.
+  // Las mismas acciones siguen disponibles dentro de la sección Plantilla.
   if (sampleBtn) {
     sampleBtn.textContent = '✨ Cargar plantilla de prueba';
     const hint = sampleBtn.parentElement?.querySelector('.hint');
@@ -72,14 +121,14 @@
       clearBtn.type = 'button';
       clearBtn.id = 'clearAllBtn';
       clearBtn.className = 'btn danger';
-      clearBtn.textContent = '🗑 Reiniciar etiqueta';
+      clearBtn.textContent = '↺ Reiniciar etiqueta';
       clearBtn.title = 'Borrar todos los elementos y empezar desde cero';
       clearBtn.addEventListener('click', resetLabel);
       wrap.appendChild(clearBtn);
     }
   }
 
-  // Accesos directos en el menú móvil de tres puntos.
+  // También se conservan en el menú móvil general.
   const mobileMenu = $('#mobileMoreMenu');
   if (mobileMenu) {
     if (!$('#mobileSampleQuick')) {
@@ -96,7 +145,7 @@
       clearQuick.type = 'button';
       clearQuick.id = 'mobileClearQuick';
       clearQuick.className = 'btn danger';
-      clearQuick.textContent = '🗑 Reiniciar etiqueta';
+      clearQuick.textContent = '↺ Reiniciar etiqueta';
       clearQuick.addEventListener('click', resetLabel);
       mobileMenu.appendChild(clearQuick);
     }
