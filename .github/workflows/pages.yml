@@ -65,14 +65,14 @@ jobs:
               raise SystemExit('No se encontró el bloque antiguo de arranque en index.html')
           html = html.replace(old, new)
 
-          branding = '''
-<link rel="icon" href="assets/icon-192.jpg?v=16" sizes="192x192" type="image/jpeg">
-<link rel="apple-touch-icon" href="assets/icon-192.jpg?v=16">
-<link rel="manifest" href="manifest.webmanifest?v=16">
-<meta name="theme-color" content="#1265d6">
-<meta name="application-name" content="Etik">
-<meta name="apple-mobile-web-app-title" content="Etik">
-'''.strip()
+          branding = '\n'.join([
+              '<link rel="icon" href="assets/icon-192.jpg?v=16" sizes="192x192" type="image/jpeg">',
+              '<link rel="apple-touch-icon" href="assets/icon-192.jpg?v=16">',
+              '<link rel="manifest" href="manifest.webmanifest?v=16">',
+              '<meta name="theme-color" content="#1265d6">',
+              '<meta name="application-name" content="Etik">',
+              '<meta name="apple-mobile-web-app-title" content="Etik">',
+          ])
           if 'rel="manifest"' not in html:
               html = html.replace('</head>', branding + '\n</head>')
 
