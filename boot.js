@@ -19,14 +19,15 @@
     try{
       const style=document.createElement('link');
       style.rel='stylesheet';
-      style.href='styles.css?v=14';
+      style.href='styles.css?v=15';
       document.head.appendChild(style);
 
-      await loadScript('qr-engine.js?v=14');
-      await loadScript('app.js?v=14');
-      await loadScript('enhancements.js?v=14');
-      await loadScript('menu.js?v=14');
-      await loadScript('credits.js?v=14');
+      await loadScript('qr-engine.js?v=15');
+      await loadScript('app.js?v=15');
+      await loadScript('enhancements.js?v=15');
+      await loadScript('menu.js?v=15');
+      await loadScript('accordion.js?v=15');
+      await loadScript('credits.js?v=15');
 
       delete window.__etikCssGzip;
       delete window.__etikQrGzip;
