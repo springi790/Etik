@@ -13,14 +13,13 @@ on:
       - "templates.js"
       - "history.js"
       - "index.html"
+      - "android-update.json"
       - "assets/**"
       - ".github/workflows/android-debug.yml"
 
 permissions:
-  contents: read
+  contents: write
 
-# Solo una compilación Android a la vez. Esto evita que dos runners creen
-# simultáneamente firmas de depuración distintas cuando el caché aún no existe.
 concurrency:
   group: etik-android-debug-signing
   cancel-in-progress: false
@@ -44,9 +43,6 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      # Gradle genera ~/.android/debug.keystore automáticamente. Guardamos ese
-      # archivo entre ejecuciones para que todas las alphas futuras tengan la
-      # misma firma y Android permita instalarlas como actualización.
       - name: Restore persistent Etik debug signing key
         uses: actions/cache@v4
         with:
@@ -72,15 +68,38 @@ jobs:
         run: |
           npx capacitor-assets generate --android --assetPath assets --iconBackgroundColor '#ffffff' --splashBackgroundColor '#ffffff'
 
+      - name: Patch Android native integration
+        working-directory: mobile
+        run: node scripts/patch-android.mjs
+
       - name: Build debug APK
         working-directory: mobile/android
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug
 
+      - name: Prepare APK artifact
+        run: cp mobile/android/app/build/outputs/apk/debug/app-debug.apk "$RUNNER_TEMP/Etik-Android.apk"
+
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: Etik-Android-debug-alpha4
-          path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          name: Etik-Android-debug-alpha5
+          path: ${{ runner.temp }}/Etik-Android.apk
           if-no-files-found: error
+
+      - name: Publish Android alpha release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(node -p "require('./mobile/package.json').version")
+          TAG="android-v${VERSION}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$RUNNER_TEMP/Etik-Android.apk" --clobber
+          else
+            gh release create "$TAG" "$RUNNER_TEMP/Etik-Android.apk" \
+              --target "$GITHUB_SHA" \
+              --title "Etik Android ${VERSION}" \
+              --prerelease \
+              --notes "Compilación de prueba de Etik Android. Incluye el mismo editor de la versión web y el canal de actualización integrado."
+          fi
