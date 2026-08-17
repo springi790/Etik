@@ -101,8 +101,14 @@
     $('#etikSampleVisible')?.addEventListener('click', () => { closeMenu(); loadSample(); });
     $('#etikResetVisible')?.addEventListener('click', () => { closeMenu(); resetLabel(); });
     document.addEventListener('click', closeMenu);
-    window.addEventListener('resize', closeMenu, {passive:true});
-    window.addEventListener('scroll', closeMenu, {passive:true});
+    // En Android aparecen pequeños eventos resize por la barra de estado, notch
+    // y cambios de viewport. No deben cerrar el menú apenas se abre. Solo lo
+    // cerramos cuando cambia de verdad el ancho (rotación/pantalla dividida).
+    let quickMenuWidth=window.innerWidth;
+    window.addEventListener('resize',()=>{
+      const width=window.innerWidth;
+      if(Math.abs(width-quickMenuWidth)>24){ quickMenuWidth=width;closeMenu(); }
+    },{passive:true});
   }
 
   // Las mismas acciones siguen disponibles dentro de la sección Plantilla.
