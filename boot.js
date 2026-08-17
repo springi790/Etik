@@ -19,21 +19,22 @@
     try{
       const style=document.createElement('link');
       style.rel='stylesheet';
-      style.href='styles.css?v=22';
+      style.href='styles.css?v=23';
       document.head.appendChild(style);
 
-      await loadScript('qr-engine.js?v=22');
-      await loadScript('lz-engine.js?v=22');
-      await loadScript('app.js?v=22');
-      await loadScript('enhancements.js?v=22');
-      await loadScript('menu.js?v=22');
-      await loadScript('templates.js?v=22');
-      await loadScript('profile.js?v=22');
-      await loadScript('accordion.js?v=22');
-      await loadScript('credits.js?v=22');
-      await loadScript('branding-fixes.js?v=22');
-      await loadScript('history.js?v=22');
-      await loadScript('platform-fixes.js?v=22');
+      await loadScript('qr-engine.js?v=23');
+      await loadScript('lz-engine.js?v=23');
+      await loadScript('app.js?v=23');
+      await loadScript('enhancements.js?v=23');
+      await loadScript('menu-stability.js?v=23');
+      await loadScript('menu.js?v=23');
+      await loadScript('templates.js?v=23');
+      await loadScript('profile.js?v=23');
+      await loadScript('accordion.js?v=23');
+      await loadScript('credits.js?v=23');
+      await loadScript('branding-fixes.js?v=23');
+      await loadScript('history.js?v=23');
+      await loadScript('platform-fixes.js?v=23');
 
       delete window.__etikCssGzip;
       delete window.__etikQrGzip;
