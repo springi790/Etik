@@ -61,15 +61,15 @@ jobs:
               '<script src="app-data.js"></script>',
               '<script src="boot.js"></script>',
           ])
-          new = '<script src="boot.js?v=21"></script>'
+          new = '<script src="boot.js?v=22"></script>'
           if old not in html:
               raise SystemExit('No se encontró el bloque antiguo de arranque en index.html')
           html = html.replace(old, new)
 
           branding = '\n'.join([
-              '<link rel="icon" href="assets/icon-192.png?v=21" sizes="192x192" type="image/png">',
-              '<link rel="apple-touch-icon" href="assets/icon-192.png?v=21">',
-              '<link rel="manifest" href="manifest.webmanifest?v=21">',
+              '<link rel="icon" href="assets/icon-192.png?v=22" sizes="192x192" type="image/png">',
+              '<link rel="apple-touch-icon" href="assets/icon-192.png?v=22">',
+              '<link rel="manifest" href="manifest.webmanifest?v=22">',
               '<meta name="theme-color" content="#1265d6">',
               '<meta name="application-name" content="Etik">',
               '<meta name="apple-mobile-web-app-title" content="Etik">',
@@ -78,7 +78,7 @@ jobs:
               html = html.replace('</head>', branding + '\n</head>')
 
           old_brand = '<div class="brand-mark">E</div>'
-          new_brand = '<div class="brand-mark"><img src="assets/icon-192.png?v=21" alt="" style="width:100%;height:100%;object-fit:contain;display:block"></div>'
+          new_brand = '<div class="brand-mark"><img src="assets/icon-192.png?v=22" alt="" style="width:100%;height:100%;object-fit:contain;display:block"></div>'
           if old_brand in html:
               html = html.replace(old_brand, new_brand, 1)
 
