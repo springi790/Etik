@@ -1,6 +1,6 @@
 {
   "name": "etik-android",
-  "version": "1.0.0-alpha.4",
+  "version": "1.0.0-alpha.5",
   "private": true,
   "description": "Android target for Etik using the same web editor codebase.",
   "scripts": {
