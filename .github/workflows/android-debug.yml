@@ -105,18 +105,15 @@ jobs:
           path: ${{ runner.temp }}/Etik-Android.apk
           if-no-files-found: error
 
-      - name: Publish Android alpha release
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Publish OTA APK branch
+        shell: bash
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          APK_BLOB=$(git hash-object -w "$RUNNER_TEMP/Etik-Android.apk")
+          MANIFEST_BLOB=$(git hash-object -w android-update.json)
+          TREE=$(printf '100644 blob %s\tEtik-Android.apk\n100644 blob %s\tandroid-update.json\n' "$APK_BLOB" "$MANIFEST_BLOB" | git mktree)
           VERSION=$(node -p "require('./mobile/package.json').version")
-          TAG="android-v${VERSION}"
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" "$RUNNER_TEMP/Etik-Android.apk" --clobber
-          else
-            gh release create "$TAG" "$RUNNER_TEMP/Etik-Android.apk" \
-              --target "$GITHUB_SHA" \
-              --title "Etik Android ${VERSION}" \
-              --prerelease \
-              --notes "Compilación de prueba de Etik Android. Incluye el mismo editor de la versión web y el canal de actualización integrado."
-          fi
+          COMMIT=$(printf 'Etik Android %s OTA\n' "$VERSION" | git commit-tree "$TREE")
+          git push --force origin "$COMMIT:refs/heads/android-updates"
