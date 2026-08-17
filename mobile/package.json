@@ -1,0 +1,19 @@
+{
+  "name": "etik-android",
+  "version": "1.0.0-alpha.1",
+  "private": true,
+  "description": "Android target for Etik using the same web editor codebase.",
+  "scripts": {
+    "web:prepare": "node scripts/prepare-web.mjs",
+    "android:init": "npm run web:prepare && npx cap add android",
+    "android:sync": "npm run web:prepare && npx cap sync android",
+    "android:open": "npx cap open android"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/cli": "^8.0.0",
+    "@capacitor/core": "^8.0.0",
+    "browserify": "^17.0.1",
+    "qrcode": "^1.5.4"
+  }
+}
