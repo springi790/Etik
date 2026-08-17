@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/etik-logo.jpg" alt="Etik · Diseñador de etiquetas" width="720">
+  <img src="assets/etik-logo.png" alt="Etik · Diseñador de etiquetas" width="720">
 </p>
 
 <h1 align="center">Etik</h1>
