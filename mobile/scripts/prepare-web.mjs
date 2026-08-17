@@ -3,11 +3,13 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gunzipSync } from 'node:zlib';
 import { execFileSync } from 'node:child_process';
+import sharp from 'sharp';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const mobileDir = resolve(here, '..');
 const rootDir = resolve(mobileDir, '..');
 const outDir = join(mobileDir, 'www');
+const nativeAssetsDir = join(mobileDir, 'assets');
 
 const RUNTIME_FILES = [
   'boot.js',
@@ -19,6 +21,7 @@ const RUNTIME_FILES = [
   'credits.js',
   'branding-fixes.js',
   'history.js',
+  'platform-fixes.js',
   'manifest.webmanifest'
 ];
 
@@ -32,6 +35,7 @@ function decodeEmbedded(source, target){
 async function main(){
   await rm(outDir, {recursive:true, force:true});
   await mkdir(outDir, {recursive:true});
+  await mkdir(nativeAssetsDir, {recursive:true});
 
   const cssData = await readFile(join(rootDir, 'css-data.js'));
   const appData = await readFile(join(rootDir, 'app-data.js'));
@@ -43,12 +47,35 @@ async function main(){
   }
   await cp(join(rootDir, 'assets'), join(outDir, 'assets'), {recursive:true});
 
+  // Fuente de alta resolución para el launcher/splash nativo.
+  await sharp(join(rootDir, 'assets', 'icon-512.png'))
+    .resize(1024, 1024, {fit:'contain', background:{r:255,g:255,b:255,alpha:0}})
+    .png()
+    .toFile(join(nativeAssetsDir, 'logo.png'));
+
   const npx = process.platform === 'win32' ? 'npx.cmd' : 'npx';
   execFileSync(npx, [
     'browserify',
     join(mobileDir, 'node_modules/qrcode/lib/browser.js'),
     '--standalone', 'QRCode',
     '-o', join(outDir, 'qr-engine.js')
+  ], {cwd: mobileDir, stdio:'inherit'});
+
+  execFileSync(npx, [
+    'browserify',
+    join(mobileDir, 'node_modules/lz-string/libs/lz-string.js'),
+    '--standalone', 'LZString',
+    '-o', join(outDir, 'lz-engine.js')
+  ], {cwd: mobileDir, stdio:'inherit'});
+
+  execFileSync(npx, [
+    'esbuild',
+    join(mobileDir, 'src/native-bridge.js'),
+    '--bundle',
+    '--format=iife',
+    '--platform=browser',
+    '--target=chrome120',
+    `--outfile=${join(outDir, 'native-bridge.js')}`
   ], {cwd: mobileDir, stdio:'inherit'});
 
   let html = await readFile(join(rootDir, 'index.html'), 'utf8');
@@ -59,13 +86,13 @@ async function main(){
     '<script src="boot.js"></script>'
   ].join('\n');
   if (!html.includes(oldScripts)) throw new Error('No se encontró el bloque de arranque de Etik.');
-  html = html.replace(oldScripts, '<script src="boot.js?v=20"></script>');
+  html = html.replace(oldScripts, '<script src="native-bridge.js?v=21"></script>\n<script src="boot.js?v=21"></script>');
 
   const branding = [
-    '<link rel="icon" href="assets/icon-192.png?v=20" sizes="192x192" type="image/png">',
-    '<link rel="apple-touch-icon" href="assets/icon-192.png?v=20">',
-    '<link rel="manifest" href="manifest.webmanifest?v=20">',
-    '<meta name="theme-color" content="#1265d6">',
+    '<link rel="icon" href="assets/icon-192.png?v=21" sizes="192x192" type="image/png">',
+    '<link rel="apple-touch-icon" href="assets/icon-192.png?v=21">',
+    '<link rel="manifest" href="manifest.webmanifest?v=21">',
+    '<meta name="theme-color" content="#ffffff">',
     '<meta name="application-name" content="Etik">',
     '<meta name="apple-mobile-web-app-title" content="Etik">'
   ].join('\n');
@@ -73,7 +100,7 @@ async function main(){
 
   html = html.replace(
     '<div class="brand-mark">E</div>',
-    '<div class="brand-mark"><img src="assets/icon-192.png?v=20" alt="" style="width:100%;height:100%;object-fit:contain;display:block"></div>'
+    '<div class="brand-mark"><img src="assets/icon-192.png?v=21" alt="" style="width:100%;height:100%;object-fit:contain;display:block"></div>'
   );
 
   await writeFile(join(outDir, 'index.html'), html, 'utf8');
