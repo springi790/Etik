@@ -22,7 +22,7 @@ permissions:
 
 concurrency:
   group: etik-android-debug-signing
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build-debug-apk:
