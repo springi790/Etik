@@ -2,6 +2,11 @@ name: Build Etik Android APK
 
 on:
   workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "mobile/**"
+      - ".github/workflows/android-debug.yml"
 
 permissions:
   contents: read
