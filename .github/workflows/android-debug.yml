@@ -19,6 +19,12 @@ on:
 permissions:
   contents: read
 
+# Solo una compilación Android a la vez. Esto evita que dos runners creen
+# simultáneamente firmas de depuración distintas cuando el caché aún no existe.
+concurrency:
+  group: etik-android-debug-signing
+  cancel-in-progress: false
+
 jobs:
   build-debug-apk:
     runs-on: ubuntu-latest
@@ -37,6 +43,15 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
+
+      # Gradle genera ~/.android/debug.keystore automáticamente. Guardamos ese
+      # archivo entre ejecuciones para que todas las alphas futuras tengan la
+      # misma firma y Android permita instalarlas como actualización.
+      - name: Restore persistent Etik debug signing key
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: etik-android-debug-keystore-v1
 
       - name: Install Android target dependencies
         working-directory: mobile
@@ -66,6 +81,6 @@ jobs:
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: Etik-Android-debug-alpha3
+          name: Etik-Android-debug-alpha4
           path: mobile/android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
