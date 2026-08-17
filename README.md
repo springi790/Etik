@@ -22,11 +22,21 @@
 - Tamaño de etiqueta configurable en milímetros.
 - Cuadrícula, ajuste automático y margen seguro.
 - Interfaz móvil con paneles inferiores y controles táctiles.
-- Guardado local e importación/exportación de diseños JSON.
+- Biblioteca local de plantillas mediante IndexedDB.
+- Formato de plantilla portable `.etik` (ETIK v1).
+- Importación, duplicado y eliminación de plantillas.
+- Compartir plantillas mediante archivo, menú nativo del dispositivo o enlace directo.
+- Generación de QR para abrir plantillas compartidas cuando el diseño cabe en un enlace.
 - Plantilla de prueba y opción de reiniciar la etiqueta.
 - Impresión directa desde el navegador.
 - Menú de ayuda con instrucciones para Zebra y otras impresoras.
 - Manifiesto de aplicación web con iconos propios de Etik.
+
+## Plantillas `.etik`
+
+Etik guarda las plantillas localmente en el dispositivo. El formato `etik-template` versión 1 encapsula el diseño exportable del editor, por lo que la misma estructura puede reutilizarse posteriormente en la versión Android.
+
+Las plantillas pequeñas también pueden viajar dentro de un enlace de Etik. Al abrir ese enlace en otro dispositivo, Etik ofrece abrir la plantilla o guardarla en la biblioteca local. Los diseños con imágenes grandes se comparten como archivo `.etik` para evitar límites de longitud de URL.
 
 ## Uso local
 
