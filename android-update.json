@@ -1,0 +1,7 @@
+{
+  "channel": "alpha",
+  "version": "1.0.0-alpha.5",
+  "versionCode": 1000005,
+  "apkUrl": "https://github.com/springi790/Etik/releases/download/android-v1.0.0-alpha.5/Etik-Android.apk",
+  "notes": "Corrige el redimensionado de códigos QR, estabiliza el menú de tres puntos, habilita impresión nativa de Android y añade comprobación automática de actualizaciones."
+}
