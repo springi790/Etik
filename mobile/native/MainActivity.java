@@ -35,7 +35,7 @@ public class MainActivity extends BridgeActivity {
     }
 
     @Override
-    protected void onResume() {
+    public void onResume() {
         super.onResume();
         if (pendingUpdateUrl != null && canInstallPackages()) {
             String url = pendingUpdateUrl;
@@ -45,7 +45,7 @@ public class MainActivity extends BridgeActivity {
     }
 
     @Override
-    protected void onDestroy() {
+    public void onDestroy() {
         if (updateReceiver != null) {
             try { unregisterReceiver(updateReceiver); } catch (Exception ignored) {}
             updateReceiver = null;
