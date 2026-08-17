@@ -14,6 +14,7 @@ const nativeAssetsDir = join(mobileDir, 'assets');
 const RUNTIME_FILES = [
   'boot.js',
   'enhancements.js',
+  'menu-stability.js',
   'menu.js',
   'templates.js',
   'profile.js',
@@ -41,13 +42,13 @@ async function main(){
   const appData = await readFile(join(rootDir, 'app-data.js'));
   await writeFile(join(outDir, 'styles.css'), decodeEmbedded(cssData, 'styles.css'));
   await writeFile(join(outDir, 'app.js'), decodeEmbedded(appData, 'app.js'));
+  execFileSync(process.execPath, [join(rootDir, 'app-patch.mjs'), join(outDir, 'app.js')], {cwd: rootDir, stdio:'inherit'});
 
   for (const file of RUNTIME_FILES) {
     await copyFile(join(rootDir, file), join(outDir, file));
   }
   await cp(join(rootDir, 'assets'), join(outDir, 'assets'), {recursive:true});
 
-  // Fuente de alta resolución para el launcher/splash nativo.
   await sharp(join(rootDir, 'assets', 'icon-512.png'))
     .resize(1024, 1024, {fit:'contain', background:{r:255,g:255,b:255,alpha:0}})
     .png()
@@ -86,12 +87,12 @@ async function main(){
     '<script src="boot.js"></script>'
   ].join('\n');
   if (!html.includes(oldScripts)) throw new Error('No se encontró el bloque de arranque de Etik.');
-  html = html.replace(oldScripts, '<script src="native-bridge.js?v=22"></script>\n<script src="boot.js?v=22"></script>');
+  html = html.replace(oldScripts, '<script src="native-bridge.js?v=23"></script>\n<script src="boot.js?v=23"></script>');
 
   const branding = [
-    '<link rel="icon" href="assets/icon-192.png?v=22" sizes="192x192" type="image/png">',
-    '<link rel="apple-touch-icon" href="assets/icon-192.png?v=22">',
-    '<link rel="manifest" href="manifest.webmanifest?v=22">',
+    '<link rel="icon" href="assets/icon-192.png?v=23" sizes="192x192" type="image/png">',
+    '<link rel="apple-touch-icon" href="assets/icon-192.png?v=23">',
+    '<link rel="manifest" href="manifest.webmanifest?v=23">',
     '<meta name="theme-color" content="#ffffff">',
     '<meta name="application-name" content="Etik">',
     '<meta name="apple-mobile-web-app-title" content="Etik">'
@@ -100,7 +101,7 @@ async function main(){
 
   html = html.replace(
     '<div class="brand-mark">E</div>',
-    '<div class="brand-mark"><img src="assets/icon-192.png?v=22" alt="" style="width:100%;height:100%;object-fit:contain;display:block"></div>'
+    '<div class="brand-mark"><img src="assets/icon-192.png?v=23" alt="" style="width:100%;height:100%;object-fit:contain;display:block"></div>'
   );
 
   await writeFile(join(outDir, 'index.html'), html, 'utf8');
